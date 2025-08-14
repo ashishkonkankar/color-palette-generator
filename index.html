@@ -1,64 +1,141 @@
 <html>
   <body>
     <div id="app"></div>
-
-    <!-- React & Babel -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <script type="text/babel">
-      function ColorPaletteGenerator() {
-        const [palette, setPalette] = React.useState([]);
+      // Utility functions for harmonious colors
+      const clampHue = (h) => ((h % 360) + 360) % 360;
 
-        // Function to generate 5 colors with same hue
-        function generatePalette() {
-          const hue = Math.floor(Math.random() * 360); // 0-359 degrees
-          const colors = [20, 40, 60, 80, 100].map((sat) => {
-            return `hsl(${hue}, ${sat}%, 50%)`;
-          });
-          setPalette(colors);
+      function makePalette(baseHue, mode) {
+        const baseS = 70;
+        const baseL = 50;
+
+        const vary = (i) => ({
+          s: Math.max(45, Math.min(85, baseS + (i - 2) * 5)),
+          l: Math.max(35, Math.min(65, baseL + (i - 2) * 4)),
+        });
+
+        let hueOffsets = [];
+        if (mode === "analogous") hueOffsets = [-40, -20, 0, 20, 40];
+        if (mode === "triadic") hueOffsets = [-120, 0, 120, -60, 60];
+        if (mode === "split") hueOffsets = [-150, 0, 150, -30, 30];
+
+        return hueOffsets.map((off, i) => {
+          const { s, l } = vary(i);
+          const h = clampHue(baseHue + off);
+          return `hsl(${h} ${s}% ${l}%)`;
+        });
+      }
+
+      function randomHue() {
+        return Math.floor(Math.random() * 360);
+      }
+
+      function randomMode() {
+        const modes = ["analogous", "triadic", "split"];
+        return modes[Math.floor(Math.random() * modes.length)];
+      }
+
+      function App() {
+        const [hue, setHue] = React.useState(randomHue());
+        const [mode, setMode] = React.useState(randomMode());
+        const colors = React.useMemo(() => makePalette(hue, mode), [hue, mode]);
+
+        function handleGenerate() {
+          setHue(randomHue());
+          setMode(randomMode());
         }
 
-        // Generate one palette on first load
-        React.useEffect(() => {
-          generatePalette();
-        }, []);
+        const containerStyle = {
+          position: 'relative',
+          height: '100vh',
+          width: '100vw',
+          overflow: 'hidden',
+          margin: 0,
+          fontFamily: 'Arial, sans-serif'
+        };
+
+        const columnsStyle = {
+          display: 'flex',
+          height: '100%',
+          width: '100%'
+        };
+
+        const columnStyle = {
+          flex: 1,
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+          padding: '24px'
+        };
+
+        const labelStyle = {
+          borderRadius: '6px',
+          backgroundColor: 'rgba(0,0,0,0.4)',
+          color: 'white',
+          fontSize: '14px',
+          padding: '8px 12px',
+          userSelect: 'all',
+          cursor: 'pointer'
+        };
+
+        const buttonContainerStyle = {
+          position: 'absolute',
+          bottom: '80px',
+          left: '50%',
+          transform: 'translateX(-50%)'
+        };
+
+        const buttonStyle = {
+          padding: '12px 24px',
+          fontSize: '16px',
+          fontWeight: 'bold',
+          border: 'none',
+          borderRadius: '8px',
+          backgroundColor: '#007bff',
+          color: 'white',
+          cursor: 'pointer',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          transition: 'all 0.2s ease'
+        };
 
         return (
-          <div style={{ fontFamily: "sans-serif", textAlign: "center" }}>
-            <h1>Color Palette Generator</h1>
-            <button
-              onClick={generatePalette}
-              style={{
-                padding: "10px 20px",
-                marginBottom: "20px",
-                cursor: "pointer",
-              }}
-            >
-              Generate
-            </button>
-
-            <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
-              {palette.map((color, index) => (
+          <div style={containerStyle}>
+            <div style={columnsStyle}>
+              {colors.map((color, idx) => (
                 <div
-                  key={index}
-                  style={{
-                    backgroundColor: color,
-                    width: "100px",
-                    height: "100px",
-                    borderRadius: "8px",
-                  }}
-                ></div>
+                  key={idx}
+                  style={{...columnStyle, backgroundColor: color}}
+                >
+                  <div style={labelStyle}>
+                    {color}
+                  </div>
+                </div>
               ))}
+            </div>
+            <div style={buttonContainerStyle}>
+              <button 
+                onClick={handleGenerate}
+                style={buttonStyle}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#0056b3'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#007bff'}
+              >
+                Generate
+              </button>
             </div>
           </div>
         );
       }
 
-      // Render
-      const root = ReactDOM.createRoot(document.getElementById("app"));
-      root.render(<ColorPaletteGenerator />);
+      // Reset body margins for full viewport
+      document.body.style.margin = '0';
+      document.body.style.padding = '0';
+
+      const root = ReactDOM.createRoot(document.getElementById('app'));
+      root.render(<App />);
     </script>
   </body>
 </html>

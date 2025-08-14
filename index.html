@@ -1,0 +1,64 @@
+<html>
+  <body>
+    <div id="app"></div>
+
+    <!-- React & Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+      function ColorPaletteGenerator() {
+        const [palette, setPalette] = React.useState([]);
+
+        // Function to generate 5 colors with same hue
+        function generatePalette() {
+          const hue = Math.floor(Math.random() * 360); // 0-359 degrees
+          const colors = [20, 40, 60, 80, 100].map((sat) => {
+            return `hsl(${hue}, ${sat}%, 50%)`;
+          });
+          setPalette(colors);
+        }
+
+        // Generate one palette on first load
+        React.useEffect(() => {
+          generatePalette();
+        }, []);
+
+        return (
+          <div style={{ fontFamily: "sans-serif", textAlign: "center" }}>
+            <h1>Color Palette Generator</h1>
+            <button
+              onClick={generatePalette}
+              style={{
+                padding: "10px 20px",
+                marginBottom: "20px",
+                cursor: "pointer",
+              }}
+            >
+              Generate
+            </button>
+
+            <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
+              {palette.map((color, index) => (
+                <div
+                  key={index}
+                  style={{
+                    backgroundColor: color,
+                    width: "100px",
+                    height: "100px",
+                    borderRadius: "8px",
+                  }}
+                ></div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      // Render
+      const root = ReactDOM.createRoot(document.getElementById("app"));
+      root.render(<ColorPaletteGenerator />);
+    </script>
+  </body>
+</html>
